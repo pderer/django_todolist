@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+  {% load static %}
+  {% load todo_filter %}
+
+  <head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Todo List</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}"/>
+  </head>
+
+  <body>
+    <h1>Todo List</h1>
+    {% if is_modify %}
+      <form action="{% url 'todo_modify_save' prev_todo_text.id %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="content" id="content" value="{{ prev_todo_text }}" required="required"/>
+        <button type="submit">입력</button>
+      </form>
+    {% else %}
+      <form action="{% url 'todo_create' %}" method="post">
+        {% csrf_token %}
+        <input type="text" name="content" id="content" required="required"/>
+        <button type="submit">입력</button>
+      </form>
+    {% endif %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>글 번호</th>
+          <th>내용</th>
+          <th>입력 날짜</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if latest_todo_list %}
+          {% for todo in latest_todo_list %}
+            <tr>
+              <td>{{ latest_todo_list.paginator.count|sub:latest_todo_list.start_index|sub:forloop.counter0|add:1}}</td>
+              <td>{{ todo.todo_text }}</td>
+              <td>{{ todo.pub_date }}</td>
+              <td>
+                <a href="{% url 'todo_modify' todo.id %}">수정</a>
+              </td>
+              <td>
+                <a href="{% url 'todo_delete' todo.id %}">삭제</a>
+              </td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="3">todo가 없습니다.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <ul>
+      {% for page_number in latest_todo_list.paginator.page_range %}
+        {% if page_number == latest_todo_list.number %}
+          <li aria-current="page">
+            <a href="?page={{ page_number }}">{{ page_number }}</a>
+          </li>
+        {% else %}
+          <li>
+            <a href="?page={{ page_number }}">{{page_number}}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </body>
+
+</html>
